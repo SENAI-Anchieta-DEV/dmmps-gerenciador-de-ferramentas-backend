@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.UUID;
 
 public interface FerramentaRepository extends JpaRepository<Ferramenta, UUID> {
-    boolean existsByCodigoQr(String codigoQr);
+    boolean existsByCodigoPatrimonio(String codigoPatrimonio);
 }

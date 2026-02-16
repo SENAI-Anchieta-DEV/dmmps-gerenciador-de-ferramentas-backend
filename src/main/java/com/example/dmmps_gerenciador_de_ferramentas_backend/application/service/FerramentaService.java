@@ -38,7 +38,7 @@ public class FerramentaService {
     @Transactional
     public FerramentaResponseDTO cadastrar(FerramentaRequestDTO dados) {
         // Validação simples: QR Code deve ser único
-        if (ferramentaRepository.existsByCodigoQr(dados.codigoQr())) {
+        if (ferramentaRepository.existsByCodigoPatrimonio(dados.codigoQr())) {
             // Idealmente, lançar uma exceção personalizada aqui (Task 2.4)
             throw new IllegalArgumentException("Já existe uma ferramenta com este QR Code.");
         }
@@ -47,7 +47,7 @@ public class FerramentaService {
         novaFerramenta.setNome(dados.nome());
         novaFerramenta.setDescricao(dados.descricao());
         novaFerramenta.setFabricante(dados.fabricante());
-        novaFerramenta.setCodigoQr(dados.codigoQr());
+        novaFerramenta.setCodigoPatrimonio(dados.codigoQr());
         novaFerramenta.setGavetaLocalizacao(dados.gavetaLocalizacao());
 
         // Define status inicial conforme regra de negócio
@@ -66,7 +66,7 @@ public class FerramentaService {
         ferramenta.setDescricao(dados.descricao());
         ferramenta.setFabricante(dados.fabricante());
         // Não permitimos mudar o QR Code levianamente, mas se necessário:
-        ferramenta.setCodigoQr(dados.codigoQr());
+        ferramenta.setCodigoPatrimonio(dados.codigoQr());
         ferramenta.setGavetaLocalizacao(dados.gavetaLocalizacao());
 
         Ferramenta atualizada = ferramentaRepository.save(ferramenta);
@@ -104,7 +104,7 @@ public class FerramentaService {
                 f.getNome(),
                 f.getDescricao(),
                 f.getFabricante(),
-                f.getCodigoQr(),
+                f.getCodigoPatrimonio(),
                 f.getStatus(),
                 f.getGavetaLocalizacao()
         );

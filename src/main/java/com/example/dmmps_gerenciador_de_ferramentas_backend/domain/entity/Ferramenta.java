@@ -27,8 +27,8 @@ public class Ferramenta {
     @Column(nullable = false)
     private String fabricante;
 
-    @Column(name = "codigo_qr", unique = true, nullable = false)
-    private String codigoQr;
+    @Column(name = "codigo_patrimonio", unique = true, nullable = false)
+    private String codigoPatrimonio; //codigoQR
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -41,7 +41,7 @@ public class Ferramenta {
         this.nome = nome;
         this.descricao = descricao;
         this.fabricante = fabricante;
-        this.codigoQr = codigoQr;
+        this.codigoPatrimonio = codigoQr;
         this.gavetaLocalizacao = gavetaLocalizacao;
         this.status = StatusFerramenta.DISPONIVEL; // Status padrão ao criar
     }
