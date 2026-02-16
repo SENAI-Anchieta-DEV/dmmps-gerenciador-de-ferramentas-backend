@@ -1,4 +1,4 @@
-package com.example.dmmps_gerenciador_de_ferramentas_backend.domain.service;
+package com.example.dmmps_gerenciador_de_ferramentas_backend.application.service;
 
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.FerramentaRequestDTO;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.FerramentaResponseDTO;

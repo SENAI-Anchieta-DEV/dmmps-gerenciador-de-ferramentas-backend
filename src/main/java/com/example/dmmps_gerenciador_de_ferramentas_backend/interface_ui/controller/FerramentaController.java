@@ -3,7 +3,7 @@ package com.example.dmmps_gerenciador_de_ferramentas_backend.interface_ui.contro
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.FerramentaRequestDTO;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.FerramentaResponseDTO;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.enums.StatusFerramenta;
-import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.service.FerramentaService;
+import com.example.dmmps_gerenciador_de_ferramentas_backend.application.service.FerramentaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
