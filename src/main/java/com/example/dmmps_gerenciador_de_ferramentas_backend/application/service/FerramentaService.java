@@ -19,7 +19,7 @@ public class FerramentaService {
         this.ferramentaRepository = ferramentaRepository;
     }
 
-    // --- 1. LISTAR TODAS ---
+    // --- 1. LISTAR TODAS --
     @Transactional(readOnly = true)
     public List<FerramentaResponseDTO> listarTodas() {
         return ferramentaRepository.findAll().stream()
