@@ -9,7 +9,7 @@ public record FerramentaResponseDTO(
         String nome,
         String descricao,
         String fabricante,
-        String codigoQr,
+        String codigoPatrimonio,
         StatusFerramenta status,
         String gavetaLocalizacao
 ) {

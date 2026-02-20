@@ -4,7 +4,7 @@ public record FerramentaRequestDTO(
         String nome,
         String descricao,
         String fabricante,
-        String codigoQr,
+        String codigoPatrimonio,
         String gavetaLocalizacao
 ) {
 }
