@@ -2,6 +2,7 @@ package com.example.dmmps_gerenciador_de_ferramentas_backend.interface_ui.contro
 
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.OcorrenciaRequestDTO;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.OcorrenciaResponseDTO;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -21,7 +22,7 @@ public class OcorrenciaController {
 
     // 2. ABRIR OCORRÊNCIA (Para o Técnico relatar o dano na devolução)
     @PostMapping
-    public ResponseEntity<OcorrenciaResponseDTO> abrirOcorrencia(@RequestBody OcorrenciaRequestDTO dados) {
+    public ResponseEntity<OcorrenciaResponseDTO> abrirOcorrencia(@RequestBody @Valid OcorrenciaRequestDTO dados) {
         UUID fakeId = UUID.randomUUID();
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
