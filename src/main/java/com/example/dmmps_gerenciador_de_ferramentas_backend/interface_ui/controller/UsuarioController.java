@@ -2,6 +2,8 @@ package com.example.dmmps_gerenciador_de_ferramentas_backend.interface_ui.contro
 
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.UsuarioRequestDTO;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.UsuarioResponseDTO;
+import com.example.dmmps_gerenciador_de_ferramentas_backend.application.service.UsuarioService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -13,54 +15,40 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/usuarios")
 public class UsuarioController {
-    // 1. LISTAR TODOS (GET)
+
+    private final UsuarioService usuarioService;
+
+    public UsuarioController(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
+    }
+
     @GetMapping
     public ResponseEntity<List<UsuarioResponseDTO>> listar() {
-        return ResponseEntity.ok(List.of());
+        return ResponseEntity.ok(usuarioService.listarTodos());
     }
 
-    // 2. BUSCAR POR ID (GET) - Falta implementar lógica
     @GetMapping("/{id}")
     public ResponseEntity<UsuarioResponseDTO> buscarPorId(@PathVariable UUID id) {
-        // Retornando 404 temporariamente para mostrar que o endpoint existe
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(usuarioService.buscarPorId(id));
     }
 
-    // 3. CADASTRAR (POST)
     @PostMapping
-    public ResponseEntity<UsuarioResponseDTO> cadastrar(@RequestBody UsuarioRequestDTO dados) {
-        // Mock de ID para o URI funcionar
-        UUID fakeId = UUID.randomUUID();
-
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(fakeId)
-                .toUri();
-
-        return ResponseEntity.created(uri).build();
+    public ResponseEntity<UsuarioResponseDTO> cadastrar(@RequestBody @Valid UsuarioRequestDTO dados) {
+        UsuarioResponseDTO novoUsuario = usuarioService.cadastrar(dados);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
+                .buildAndExpand(novoUsuario.id()).toUri();
+        return ResponseEntity.created(uri).body(novoUsuario);
     }
 
-    // 4. ATUALIZAR COMPLETO (PUT)
     @PutMapping("/{id}")
-    public ResponseEntity<UsuarioResponseDTO> atualizar(
-            @PathVariable UUID id,
-            @RequestBody UsuarioRequestDTO dados) {
-
-        return ResponseEntity.ok().build();
+    public ResponseEntity<UsuarioResponseDTO> atualizar(@PathVariable UUID id, @RequestBody @Valid UsuarioRequestDTO dados) {
+        return ResponseEntity.ok(usuarioService.atualizar(id, dados));
     }
 
-    // 5. INATIVAR/ATIVAR (PATCH) - Muito útil para Usuários
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<Void> atualizarStatus(
-            @PathVariable UUID id,
-            @RequestBody Boolean ativo) {
-
-        return ResponseEntity.ok().build();
-    }
-
-    // 6. REMOVER (DELETE)
+    // Usamos DELETE lógico (Inativação) ao invés de exclusão física, por causa da Trilha de Auditoria do Gestor
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable UUID id) {
+    public ResponseEntity<Void> inativar(@PathVariable UUID id) {
+        usuarioService.inativar(id);
         return ResponseEntity.noContent().build();
     }
 }

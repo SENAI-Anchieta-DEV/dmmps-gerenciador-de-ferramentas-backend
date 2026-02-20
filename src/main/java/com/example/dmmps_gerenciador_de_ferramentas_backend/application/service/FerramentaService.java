@@ -4,6 +4,8 @@ import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.Ferr
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.FerramentaResponseDTO;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.entity.Ferramenta;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.enums.StatusFerramenta;
+import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.exceptions.CodigoPatrimonioDuplicadoException;
+import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.exceptions.FerramentaNaoEncontradaException;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.repository.FerramentaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,16 +40,16 @@ public class FerramentaService {
     @Transactional
     public FerramentaResponseDTO cadastrar(FerramentaRequestDTO dados) {
         // Validação simples: QR Code deve ser único
-        if (ferramentaRepository.existsByCodigoPatrimonio(dados.codigoQr())) {
+        if (ferramentaRepository.existsByCodigoPatrimonio(dados.codigoPatrimonio())) {
             // Idealmente, lançar uma exceção personalizada aqui (Task 2.4)
-            throw new IllegalArgumentException("Já existe uma ferramenta com este QR Code.");
+            throw new CodigoPatrimonioDuplicadoException("");
         }
 
         Ferramenta novaFerramenta = new Ferramenta();
         novaFerramenta.setNome(dados.nome());
         novaFerramenta.setDescricao(dados.descricao());
         novaFerramenta.setFabricante(dados.fabricante());
-        novaFerramenta.setCodigoPatrimonio(dados.codigoQr());
+        novaFerramenta.setCodigoPatrimonio(dados.codigoPatrimonio());
         novaFerramenta.setGavetaLocalizacao(dados.gavetaLocalizacao());
 
         // Define status inicial conforme regra de negócio
@@ -66,7 +68,7 @@ public class FerramentaService {
         ferramenta.setDescricao(dados.descricao());
         ferramenta.setFabricante(dados.fabricante());
         // Não permitimos mudar o QR Code levianamente, mas se necessário:
-        ferramenta.setCodigoPatrimonio(dados.codigoQr());
+        ferramenta.setCodigoPatrimonio(dados.codigoPatrimonio());
         ferramenta.setGavetaLocalizacao(dados.gavetaLocalizacao());
 
         Ferramenta atualizada = ferramentaRepository.save(ferramenta);
@@ -85,7 +87,7 @@ public class FerramentaService {
     @Transactional
     public void deletar(UUID id) {
         if (!ferramentaRepository.existsById(id)) {
-            throw new RuntimeException("Ferramenta não encontrada");
+            throw new FerramentaNaoEncontradaException("Ferramenta não encontrada");
         }
         ferramentaRepository.deleteById(id);
     }
@@ -94,7 +96,7 @@ public class FerramentaService {
 
     private Ferramenta buscarEntidadePorId(UUID id) {
         return ferramentaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ferramenta não encontrada com id: " + id));
+                .orElseThrow(() -> new FerramentaNaoEncontradaException("Ferramenta não encontrada com id: " + id));
     }
 
     // Mapper manual (DTO -> Entity e Entity -> DTO)

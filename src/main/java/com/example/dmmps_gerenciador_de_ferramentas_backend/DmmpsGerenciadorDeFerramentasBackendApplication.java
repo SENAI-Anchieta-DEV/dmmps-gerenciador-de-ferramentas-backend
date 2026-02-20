@@ -6,8 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class DmmpsGerenciadorDeFerramentasBackendApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(DmmpsGerenciadorDeFerramentasBackendApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(DmmpsGerenciadorDeFerramentasBackendApplication.class, args);
+    }
 
 }

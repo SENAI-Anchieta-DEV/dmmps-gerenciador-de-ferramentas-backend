@@ -6,7 +6,7 @@ public class FerramentaNaoEncontradaException extends RecursoNaoEncontradoExcept
     public FerramentaNaoEncontradaException(UUID id) {
         super(String.format("Não existe um cadastro de ferramenta com código %d", id));
     }
-    public FerramentaNaoEncontradaException(String codigoPatrimonio) {
-    super(String.format("Não existe ferramenta com o código de patrimônio %s", codigoPatrimonio));
+    public FerramentaNaoEncontradaException(String message) {
+    super(message);
     }
 }
