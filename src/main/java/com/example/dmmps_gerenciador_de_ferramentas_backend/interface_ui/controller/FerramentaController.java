@@ -4,6 +4,7 @@ import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.Ferr
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.FerramentaResponseDTO;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.enums.StatusFerramenta;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.service.FerramentaService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -38,7 +39,7 @@ public class FerramentaController {
     // 3. CADASTRAR (POST) - Status 201 Created
     // Retorna também o Header 'Location' com a URI do novo recurso
     @PostMapping
-    public ResponseEntity<FerramentaResponseDTO> cadastrar(@RequestBody FerramentaRequestDTO dados) {
+    public ResponseEntity<FerramentaResponseDTO> cadastrar(@RequestBody @Valid FerramentaRequestDTO dados) {
         FerramentaResponseDTO novaFerramenta = ferramentaService.cadastrar(dados);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -53,7 +54,7 @@ public class FerramentaController {
     @PutMapping("/{id}")
     public ResponseEntity<FerramentaResponseDTO> atualizar(
             @PathVariable UUID id,
-            @RequestBody FerramentaRequestDTO dados) {
+            @RequestBody @Valid FerramentaRequestDTO dados) {
 
         FerramentaResponseDTO atualizada = ferramentaService.atualizar(id, dados);
         return ResponseEntity.ok(atualizada);
@@ -64,7 +65,7 @@ public class FerramentaController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<Void> atualizarStatus(
             @PathVariable UUID id,
-            @RequestBody String novoStatus) { // Pode ser um DTO específico depois
+            @RequestBody @Valid String novoStatus) { // Pode ser um DTO específico depois
 
         try {
             // Remove aspas extras que o JSON pode enviar e converte para MAIÚSCULO

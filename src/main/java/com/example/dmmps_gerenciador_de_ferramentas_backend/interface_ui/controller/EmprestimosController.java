@@ -2,6 +2,7 @@ package com.example.dmmps_gerenciador_de_ferramentas_backend.interface_ui.contro
 
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.EmprestimoRequestDTO;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.EmprestimoResponseDTO;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -27,7 +28,7 @@ public class EmprestimosController {
 
     // 3. REGISTRAR RETIRADA (POST) - Cria um novo empréstimo
     @PostMapping
-    public ResponseEntity<EmprestimoResponseDTO> registrarRetirada(@RequestBody EmprestimoRequestDTO dados) {
+    public ResponseEntity<EmprestimoResponseDTO> registrarRetirada(@RequestBody @Valid EmprestimoRequestDTO dados) {
         // Gera um ID fictício para validar o contrato REST 201 Created
         UUID fakeId = UUID.randomUUID();
 

@@ -3,6 +3,7 @@ package com.example.dmmps_gerenciador_de_ferramentas_backend.interface_ui.contro
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.LoginRequestDTO;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.TokenResponseDTO;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.service.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,7 +16,7 @@ public class AuthController {
     /*private final AuthService auth;*/
 
     @PostMapping("/login")
-    public ResponseEntity<TokenResponseDTO> login(@RequestBody LoginRequestDTO dados) {
+    public ResponseEntity<TokenResponseDTO> login(@RequestBody @Valid LoginRequestDTO dados) {
         // A lógica real virá na Task 2.7 com Spring Security
         return ResponseEntity.ok(new TokenResponseDTO("token_dummy_por_enquanto"));
     }
