@@ -81,4 +81,28 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
     }
+
+    /* AGUARDANDO IMPLEMENTAÇÃO DO SPRING SECURITY
+    // --- 401 UNAUTHORIZED ---
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    public ProblemDetail handleAuthenticationException(Exception ex, HttpServletRequest request) {
+        return ProblemDetailUtils.buildProblem(
+                HttpStatus.UNAUTHORIZED,
+                "Não autenticado",
+                "Você precisa estar logado para acessar este recurso.",
+                request.getRequestURI()
+        );
+    }
+
+    // --- 403 FORBIDDEN ---
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ProblemDetail handleAccessDeniedException(Exception ex, HttpServletRequest request) {
+        return ProblemDetailUtils.buildProblem(
+                HttpStatus.FORBIDDEN,
+                "Acesso proibido",
+                "Você não tem permissão para realizar esta ação.",
+                request.getRequestURI()
+        );
+    }*/
+
 }
