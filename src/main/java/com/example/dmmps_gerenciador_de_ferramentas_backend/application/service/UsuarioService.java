@@ -7,6 +7,7 @@ import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.exceptions.Em
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.exceptions.NegocioException;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.exceptions.UsuarioNaoEncontradoException;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.repository.UsuarioRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,10 +18,11 @@ import java.util.UUID;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
-    // PasswordEncoder removido temporariamente para não quebrar o projeto sem o Spring Security
+    private final PasswordEncoder passwordEncoder; // Adicionamos o encoder de volta!
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
+    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -35,13 +37,15 @@ public class UsuarioService {
         Usuario novoUsuario = new Usuario(
                 dados.nome(),
                 dados.email(),
-                dados.senha(), // Salvando sem criptografia por enquanto
+                passwordEncoder.encode(dados.senha()), // Aqui a senha é criptografada antes de ir pro banco
                 dados.registro(),
                 dados.perfil()
         );
 
         return toResponseDTO(usuarioRepository.save(novoUsuario));
     }
+
+
 
     @Transactional
     public UsuarioResponseDTO atualizar(UUID id, UsuarioRequestDTO dados) {
