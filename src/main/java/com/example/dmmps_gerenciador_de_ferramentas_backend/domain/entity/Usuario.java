@@ -3,7 +3,12 @@ package com.example.dmmps_gerenciador_de_ferramentas_backend.domain.entity;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.enums.PerfilUsuario;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -13,7 +18,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class Usuario {
+public class Usuario implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -28,7 +33,6 @@ public class Usuario {
     @Column(nullable = false)
     private String senha;
 
-    // A documentação cita "Registro/ID" ou "matrícula"
     @Column(unique = true, nullable = false)
     private String registro;
 
@@ -47,4 +51,34 @@ public class Usuario {
         this.perfil = perfil;
         this.ativo = true;
     }
+
+    // --- MÉTODOS DO SPRING SECURITY (USERDETAILS) ---
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (this.perfil == PerfilUsuario.ADMIN) {
+            return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_ALMOXARIFE"), new SimpleGrantedAuthority("ROLE_TECNICO"));
+        } else if (this.perfil == PerfilUsuario.ALMOXARIFE) {
+            return List.of(new SimpleGrantedAuthority("ROLE_ALMOXARIFE"), new SimpleGrantedAuthority("ROLE_TECNICO"));
+        } else {
+            return List.of(new SimpleGrantedAuthority("ROLE_TECNICO"));
+        }
+    }
+
+    @Override
+    public String getPassword() { return senha; }
+
+    @Override
+    public String getUsername() { return email; }
+
+    @Override
+    public boolean isAccountNonExpired() { return true; }
+
+    @Override
+    public boolean isAccountNonLocked() { return true; }
+
+    @Override
+    public boolean isCredentialsNonExpired() { return true; }
+
+    @Override
+    public boolean isEnabled() { return ativo; }
 }
