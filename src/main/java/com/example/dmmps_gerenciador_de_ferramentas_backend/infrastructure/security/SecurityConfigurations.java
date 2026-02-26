@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,16 +32,30 @@ public class SecurityConfigurations {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/usuarios/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/usuarios/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/ferramentas/**").hasRole("ALMOXARIFE")
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/ferramentas/**").hasRole("ALMOXARIFE")
                         .anyRequest().authenticated()
                 )
-                // LINHA QUE FALTAVA: Necessário para o painel do H2 Console renderizar os frames
-                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+
+
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setContentType("application/problem+json");
+                            response.setStatus(401);
+                            response.getWriter().write("{\"type\":\"about:blank\",\"title\":\"Não autorizado\",\"status\":401,\"detail\":\"Token inválido ou ausente\",\"instance\":\"" + request.getRequestURI() + "\"}");
+                        })
+                        .accessDeniedHandler((request, response, accessException) -> {
+                            response.setContentType("application/problem+json");
+                            response.setStatus(403);
+                            response.getWriter().write("{\"type\":\"about:blank\",\"title\":\"Acesso negado\",\"status\":403,\"detail\":\"Seu perfil não tem permissão para esta ação\",\"instance\":\"" + request.getRequestURI() + "\"}");
+                        })
+                )
+
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
-
-
-
-
     }
 
     @Bean
