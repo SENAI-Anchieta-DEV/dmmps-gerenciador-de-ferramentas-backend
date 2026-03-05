@@ -1,4 +1,4 @@
-package com.example.dmmps_gerenciador_de_ferramentas_backend.infraestructure.security;
+package com.example.dmmps_gerenciador_de_ferramentas_backend.infrastructure.security;
 
 import com.example.dmmps_gerenciador_de_ferramentas_backend.infrastructure.security.SecurityFilter;
 import org.springframework.beans.factory.annotation.Autowired;

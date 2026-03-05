@@ -6,10 +6,12 @@ import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.exceptions.Re
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -82,3 +84,24 @@ public class GlobalExceptionHandler {
         );
     }
 }
+
+@ExceptionHandler(BadCredentialsException.class)
+public ProblemDetail handleBadCredentials(BadCredentialsException ex, HttpServletRequest request) {
+    return ProblemDetailUtils.buildProblem(
+            HttpStatus.UNAUTHORIZED,
+            "Credenciais inválidas",
+            "E-mail ou senha incorretos.",
+            request.getRequestURI()
+    );
+}
+
+@ExceptionHandler(AccessDeniedException.class)
+public ProblemDetail handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
+    return ProblemDetailUtils.buildProblem(
+            HttpStatus.FORBIDDEN,
+            "Acesso negado",
+            "Você não tem permissão para acessar este recurso.",
+            request.getRequestURI()
+    );
+}
+
