@@ -43,6 +43,9 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private Boolean ativo = true;
 
+    public Usuario(String nome, String email, String encode, String registro, PerfilUsuario perfil) {
+    }
+
     // --- Métodos obrigatórios do UserDetails ---
 
     @Override

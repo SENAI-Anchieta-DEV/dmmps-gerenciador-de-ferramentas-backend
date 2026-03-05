@@ -10,8 +10,6 @@ import java.util.UUID;
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
     Optional<Usuario> findByEmail(String email);
-
-    // Métodos necessários para as validações de cadastro no UsuarioService
     boolean existsByEmail(String email);
     boolean existsByRegistro(String registro);
 }
