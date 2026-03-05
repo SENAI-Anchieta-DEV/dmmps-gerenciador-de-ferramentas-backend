@@ -14,37 +14,38 @@ import java.time.ZoneOffset;
 
 @Service
 public class TokenService {
-    @Value("${api.security.token.secret:secret-tcc-toolhub}")
+
+    @Value("${api.security.token.secret}")
     private String secret;
 
-    public String generateToken(Usuario usuario) {
+    public String gerarToken(Usuario usuario) {
         try {
-            Algorithm algorithm = Algorithm.HMAC256(secret);
+            Algorithm algoritmo = Algorithm.HMAC256(secret);
             return JWT.create()
-                    .withIssuer("ToolHub-API")
+                    .withIssuer("gerenciador-ferramentas-api")
                     .withSubject(usuario.getEmail())
                     .withClaim("perfil", usuario.getPerfil().name())
-                    .withExpiresAt(genExpirationDate())
-                    .sign(algorithm);
+                    .withExpiresAt(dataExpiracao())
+                    .sign(algoritmo);
         } catch (JWTCreationException exception) {
             throw new RuntimeException("Erro ao gerar token JWT", exception);
         }
     }
 
-    public String validateToken(String token) {
+    public String getSubject(String tokenJWT) {
         try {
-            Algorithm algorithm = Algorithm.HMAC256(secret);
-            return JWT.require(algorithm)
-                    .withIssuer("ToolHub-API")
+            Algorithm algoritmo = Algorithm.HMAC256(secret);
+            return JWT.require(algoritmo)
+                    .withIssuer("gerenciador-ferramentas-api")
                     .build()
-                    .verify(token)
+                    .verify(tokenJWT)
                     .getSubject();
         } catch (JWTVerificationException exception) {
             return "";
         }
     }
 
-    private Instant genExpirationDate() {
+    private Instant dataExpiracao() {
         return LocalDateTime.now().plusHours(8).toInstant(ZoneOffset.of("-03:00"));
     }
 }
