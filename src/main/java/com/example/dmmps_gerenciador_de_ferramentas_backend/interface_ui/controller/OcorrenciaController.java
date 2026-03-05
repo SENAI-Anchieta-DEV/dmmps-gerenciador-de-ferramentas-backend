@@ -1,7 +1,9 @@
 package com.example.dmmps_gerenciador_de_ferramentas_backend.interface_ui.controller;
 
+import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.AtualizacaoStatusOcorrenciaDTO;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.OcorrenciaRequestDTO;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.OcorrenciaResponseDTO;
+import com.example.dmmps_gerenciador_de_ferramentas_backend.application.service.OcorrenciaService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,27 +16,59 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/ocorrencias")
 public class OcorrenciaController {
-    // 1. LISTAR TODAS (Para o Almoxarife/Admin verem o painel de problemas)
+
+    private final OcorrenciaService ocorrenciaService;
+
+    public OcorrenciaController(OcorrenciaService ocorrenciaService) {
+        this.ocorrenciaService = ocorrenciaService;
+    }
+
+    // 1. LISTAR TODAS (GET) - Status 200 OK
+    // Restrito a ALMOXARIFE e GESTOR
     @GetMapping
     public ResponseEntity<List<OcorrenciaResponseDTO>> listarTodas() {
-        return ResponseEntity.ok(List.of());
+        List<OcorrenciaResponseDTO> ocorrencias = ocorrenciaService.listarTodas();
+        return ResponseEntity.ok(ocorrencias);
     }
 
-    // 2. ABRIR OCORRÊNCIA (Para o Técnico relatar o dano na devolução)
+    // 2. ABRIR OCORRÊNCIA (POST) - Status 201 Created
+    // Restrito a TECNICO e ALMOXARIFE (RF14)
     @PostMapping
     public ResponseEntity<OcorrenciaResponseDTO> abrirOcorrencia(@RequestBody @Valid OcorrenciaRequestDTO dados) {
-        UUID fakeId = UUID.randomUUID();
+        OcorrenciaResponseDTO novaOcorrencia = ocorrenciaService.registrarOcorrencia(dados);
+
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(fakeId)
+                .buildAndExpand(novaOcorrencia.id())
                 .toUri();
 
-        return ResponseEntity.created(uri).build();
+        return ResponseEntity.created(uri).body(novaOcorrencia);
     }
 
-    // 3. BUSCAR POR ID
+    // 3. BUSCAR POR ID (GET) - Status 200 OK
+    // Restrito a ALMOXARIFE e GESTOR
     @GetMapping("/{id}")
     public ResponseEntity<OcorrenciaResponseDTO> buscarPorId(@PathVariable UUID id) {
-        return ResponseEntity.notFound().build();
+        OcorrenciaResponseDTO ocorrencia = ocorrenciaService.buscarPorId(id);
+        return ResponseEntity.ok(ocorrencia);
+    }
+
+    // 4. HISTÓRICO POR FERRAMENTA (GET) - Status 200 OK
+    // Restrito a ALMOXARIFE e GESTOR (RF34)
+    @GetMapping("/ferramenta/{idFerramenta}")
+    public ResponseEntity<List<OcorrenciaResponseDTO>> listarPorFerramenta(@PathVariable UUID idFerramenta) {
+        List<OcorrenciaResponseDTO> ocorrencias = ocorrenciaService.listarPorFerramenta(idFerramenta);
+        return ResponseEntity.ok(ocorrencias);
+    }
+
+    // 5. ATUALIZAR STATUS (PATCH) - Status 200 OK
+    // Restrito a ALMOXARIFE (RF15, RF16, RN06)
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<OcorrenciaResponseDTO> atualizarStatus(
+            @PathVariable UUID id,
+            @RequestBody @Valid AtualizacaoStatusOcorrenciaDTO dados) {
+
+        OcorrenciaResponseDTO atualizada = ocorrenciaService.atualizarStatus(id, dados);
+        return ResponseEntity.ok(atualizada);
     }
 }
