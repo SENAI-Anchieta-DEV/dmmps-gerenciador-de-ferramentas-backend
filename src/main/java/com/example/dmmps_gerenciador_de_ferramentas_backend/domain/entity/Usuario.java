@@ -41,34 +41,24 @@ public class Usuario implements UserDetails {
     private PerfilUsuario perfil;
 
     @Column(nullable = false)
-    private Boolean ativo;
+    private Boolean ativo = true;
 
-    public Usuario(String nome, String email, String senha, String registro, PerfilUsuario perfil) {
-        this.nome = nome;
-        this.email = email;
-        this.senha = senha;
-        this.registro = registro;
-        this.perfil = perfil;
-        this.ativo = true;
-    }
+    // --- Métodos obrigatórios do UserDetails ---
 
-    // --- MÉTODOS DO SPRING SECURITY (USERDETAILS) ---
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (this.perfil == PerfilUsuario.ADMIN) {
-            return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_ALMOXARIFE"), new SimpleGrantedAuthority("ROLE_TECNICO"));
-        } else if (this.perfil == PerfilUsuario.ALMOXARIFE) {
-            return List.of(new SimpleGrantedAuthority("ROLE_ALMOXARIFE"), new SimpleGrantedAuthority("ROLE_TECNICO"));
-        } else {
-            return List.of(new SimpleGrantedAuthority("ROLE_TECNICO"));
-        }
+        return List.of(new SimpleGrantedAuthority("ROLE_" + this.perfil.name()));
     }
 
     @Override
-    public String getPassword() { return senha; }
+    public String getPassword() {
+        return this.senha;
+    }
 
     @Override
-    public String getUsername() { return email; }
+    public String getUsername() {
+        return this.email; // O login será feito pelo e-mail
+    }
 
     @Override
     public boolean isAccountNonExpired() { return true; }
@@ -80,5 +70,5 @@ public class Usuario implements UserDetails {
     public boolean isCredentialsNonExpired() { return true; }
 
     @Override
-    public boolean isEnabled() { return ativo; }
+    public boolean isEnabled() { return this.ativo; }
 }
