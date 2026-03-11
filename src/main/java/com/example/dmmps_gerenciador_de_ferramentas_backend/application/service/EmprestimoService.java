@@ -129,9 +129,13 @@ public class EmprestimoService {
         return new EmprestimoResponseDTO(
                 emprestimo.getId(),
                 emprestimo.getUsuario().getId(),
+                emprestimo.getUsuario().getNome(),
                 emprestimo.getFerramenta().getId(),
+                emprestimo.getFerramenta().getNome(),
+                emprestimo.getFerramenta().getCodigoPatrimonio(),
                 emprestimo.getDataRetirada(),
                 emprestimo.getDataDevolucao(),
+                emprestimo.getEstadoConservacao() != null ? emprestimo.getEstadoConservacao().name() : null,
                 emprestimo.getStatusEmprestimo().name()
         );
     }
