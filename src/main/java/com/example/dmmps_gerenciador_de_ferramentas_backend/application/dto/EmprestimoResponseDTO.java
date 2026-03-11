@@ -6,9 +6,13 @@ import java.util.UUID;
 public record EmprestimoResponseDTO(
         UUID id,
         UUID usuarioId,
+        String nomeUsuario,       // Nome legível do técnico
         UUID ferramentaId,
+        String nomeFerramenta,    // Nome legível da ferramenta
+        String codigoPatrimonio,  // Código de patrimônio da ferramenta
         LocalDateTime dataRetirada,
         LocalDateTime dataDevolucao,
+        String estadoConservacao, // BOM_ESTADO, DANIFICADA — null enquanto em aberto
         String status // ATIVO, FINALIZADO
 ) {
 }

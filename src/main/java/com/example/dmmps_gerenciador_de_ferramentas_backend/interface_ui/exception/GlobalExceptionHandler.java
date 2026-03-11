@@ -1,6 +1,7 @@
 package com.example.dmmps_gerenciador_de_ferramentas_backend.interface_ui.exception;
 
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.exceptions.EntidadeEmUsoException;
+import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.exceptions.FerramentaIndisponivelException;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.exceptions.NegocioException;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.exceptions.RecursoNaoEncontradoException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +22,17 @@ public class GlobalExceptionHandler {
         return ProblemDetailUtils.buildProblem(
                 HttpStatus.NOT_FOUND,
                 "Recurso não encontrado",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+    }
+
+    // --- 409 CONFLICT (Ferramenta já emprestada - RN01, RF33) ---
+    @ExceptionHandler(FerramentaIndisponivelException.class)
+    public ProblemDetail handleFerramentaIndisponivel(FerramentaIndisponivelException ex, HttpServletRequest request) {
+        return ProblemDetailUtils.buildProblem(
+                HttpStatus.CONFLICT,
+                "Ferramenta indisponível",
                 ex.getMessage(),
                 request.getRequestURI()
         );
