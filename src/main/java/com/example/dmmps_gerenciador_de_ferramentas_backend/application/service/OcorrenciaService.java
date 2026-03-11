@@ -42,7 +42,6 @@ public class OcorrenciaService {
         Ferramenta ferramenta = ferramentaRepository.findById(dados.ferramentaId())
                 .orElseThrow(() -> new FerramentaNaoEncontradaException("Ferramenta não encontrada com id: " + dados.ferramentaId()));
 
-
         Usuario usuario = usuarioRepository.findById(dados.usuarioId())
                 .orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado com id: "));
 
@@ -125,6 +124,7 @@ public class OcorrenciaService {
                 o.getUsuario().getId(),
                 o.getTitulo(),
                 o.getDescricao(),
+                o.getStatusOcorrencia(),
                 o.getDataAbertura()
         );
     }

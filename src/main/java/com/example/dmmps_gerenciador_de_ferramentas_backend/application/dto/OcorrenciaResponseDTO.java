@@ -11,6 +11,7 @@ public record OcorrenciaResponseDTO(
         UUID usuarioId,
         String titulo,
         String descricao,
+        StatusOcorrencia statusOcorrencia,
         LocalDateTime dataAbertura
 
 ) {
