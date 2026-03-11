@@ -1,7 +1,9 @@
 package com.example.dmmps_gerenciador_de_ferramentas_backend.interface_ui.controller;
 
+import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.DevolucaoRequestDTO;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.EmprestimoRequestDTO;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.EmprestimoResponseDTO;
+import com.example.dmmps_gerenciador_de_ferramentas_backend.application.service.EmprestimoService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,37 +16,53 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/emprestimos")
 public class EmprestimosController {
-    // 1. LISTAR HISTÓRICO (GET)
-    @GetMapping
-    public ResponseEntity<List<EmprestimoResponseDTO>> listarHistorico() {
-        return ResponseEntity.ok(List.of());
+
+    private final EmprestimoService emprestimoService;
+
+    public EmprestimosController(EmprestimoService emprestimoService) {
+        this.emprestimoService = emprestimoService;
     }
 
-    // 2. CONSULTAR EMPRÉSTIMO ESPECÍFICO (GET)
+    // POST /emprestimos — Check-out (RF07, RF09)
+    @PostMapping
+    public ResponseEntity<EmprestimoResponseDTO> realizarCheckOut(@RequestBody EmprestimoRequestDTO dados) {
+        EmprestimoResponseDTO response = emprestimoService.realizarCheckOut(dados);
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(response.id())
+                .toUri();
+        return ResponseEntity.created(location).body(response);
+    }
+
+    // PATCH /emprestimos/{id}/devolucao — Check-in (RF11, RF12, RF13)
+    @PatchMapping("/{id}/devolucao")
+    public ResponseEntity<EmprestimoResponseDTO> realizarCheckIn(@PathVariable UUID id,
+                                                                 @RequestBody DevolucaoRequestDTO dados) {
+        return ResponseEntity.ok(emprestimoService.realizarCheckIn(id, dados));
+    }
+
+    // GET /emprestimos — Listar todos
+    @GetMapping
+    public ResponseEntity<List<EmprestimoResponseDTO>> listarTodos() {
+        return ResponseEntity.ok(emprestimoService.listarTodos());
+    }
+
+    // GET /emprestimos/{id} — Buscar por ID
     @GetMapping("/{id}")
     public ResponseEntity<EmprestimoResponseDTO> buscarPorId(@PathVariable UUID id) {
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(emprestimoService.buscarPorId(id));
     }
 
-    // 3. REGISTRAR RETIRADA (POST) - Cria um novo empréstimo
-    @PostMapping
-    public ResponseEntity<EmprestimoResponseDTO> registrarRetirada(@RequestBody @Valid EmprestimoRequestDTO dados) {
-        // Gera um ID fictício para validar o contrato REST 201 Created
-        UUID fakeId = UUID.randomUUID();
-
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(fakeId)
-                .toUri();
-
-        return ResponseEntity.created(uri).build();
+    // GET /emprestimos/tecnico/{idUsuario} — Histórico por técnico
+    @GetMapping("/tecnico/{idUsuario}")
+    public ResponseEntity<List<EmprestimoResponseDTO>> listarPorTecnico(@PathVariable UUID idUsuario) {
+        return ResponseEntity.ok(emprestimoService.listarPorTecnico(idUsuario));
     }
 
-    // 4. REGISTRAR DEVOLUÇÃO (PATCH)
-    // Usamos PATCH porque estamos a finalizar um recurso aberto, atualizando a data de devolução
-    @PatchMapping("/{id}/devolucao")
-    public ResponseEntity<Void> registrarDevolucao(@PathVariable UUID id) {
-        // Futuramente: Service.finalizarEmprestimo(id);
-        return ResponseEntity.noContent().build();
+    // GET /emprestimos/ferramenta/{idFerramenta} — Histórico por ferramenta
+    @GetMapping("/ferramenta/{idFerramenta}")
+    public ResponseEntity<List<EmprestimoResponseDTO>> listarPorFerramenta(@PathVariable UUID idFerramenta) {
+        return ResponseEntity.ok(emprestimoService.listarPorFerramenta(idFerramenta));
     }
 }
