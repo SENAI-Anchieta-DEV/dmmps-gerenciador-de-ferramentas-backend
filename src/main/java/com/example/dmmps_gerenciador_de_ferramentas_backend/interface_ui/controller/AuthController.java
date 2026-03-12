@@ -4,6 +4,7 @@ import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.Logi
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.TokenResponseDTO;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.service.AuthService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,12 +13,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auth")
+@RequiredArgsConstructor
 public class AuthController {
-    /*private final AuthService auth;*/
+
+    private final AuthService authService;
 
     @PostMapping("/login")
     public ResponseEntity<TokenResponseDTO> login(@RequestBody @Valid LoginRequestDTO dados) {
-        // A lógica real virá na Task 2.7 com Spring Security
-        return ResponseEntity.ok(new TokenResponseDTO("token_dummy_por_enquanto"));
+        return ResponseEntity.ok(authService.login(dados));
     }
 }
