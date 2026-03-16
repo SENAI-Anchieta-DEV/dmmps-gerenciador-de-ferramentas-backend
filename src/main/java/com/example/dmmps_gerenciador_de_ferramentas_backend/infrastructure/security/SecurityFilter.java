@@ -1,6 +1,7 @@
 package com.example.dmmps_gerenciador_de_ferramentas_backend.infrastructure.security;
 
-import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.repository.UsuarioRepository;
+import com.example.dmmps_gerenciador_de_ferramentas_backend.application.service.TokenService;
+import com.example.dmmps_gerenciador_de_ferramentas_backend.application.service.UsuarioService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import com.example.dmmps_gerenciador_de_ferramentas_backend.application.service.TokenService;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -19,7 +19,7 @@ import java.io.IOException;
 public class SecurityFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;
-    private final UsuarioRepository usuarioRepository;
+    private final UsuarioService usuarioService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -31,9 +31,16 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         if (token != null) {
             String email = tokenService.validarToken(token);
+
             if (email != null) {
-                var usuario = usuarioRepository.findByEmail(email)
-                        .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                var usuarioOpt = usuarioService.buscarPorEmail(email);
+
+                if (usuarioOpt.isEmpty()) {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                }
+
+                var usuario = usuarioOpt.get();
 
                 var auth = new UsernamePasswordAuthenticationToken(
                         usuario, null, usuario.getAuthorities()

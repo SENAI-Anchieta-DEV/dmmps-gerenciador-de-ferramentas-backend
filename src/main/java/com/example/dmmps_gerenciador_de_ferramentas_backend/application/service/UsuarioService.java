@@ -11,13 +11,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
-    // PasswordEncoder removido temporariamente para não quebrar o projeto sem o Spring Security
 
     public UsuarioService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
@@ -35,7 +35,7 @@ public class UsuarioService {
         Usuario novoUsuario = new Usuario(
                 dados.nome(),
                 dados.email(),
-                dados.senha(), // Salvando sem criptografia por enquanto
+                dados.senha(),
                 dados.registro(),
                 dados.perfil()
         );
@@ -62,8 +62,6 @@ public class UsuarioService {
     @Transactional
     public void inativar(UUID id) {
         Usuario usuario = buscarEntidadePorId(id);
-
-
         usuario.setAtivo(false);
         usuarioRepository.save(usuario);
     }
@@ -76,6 +74,12 @@ public class UsuarioService {
     @Transactional(readOnly = true)
     public UsuarioResponseDTO buscarPorId(UUID id) {
         return toResponseDTO(buscarEntidadePorId(id));
+    }
+
+    // novo metodo — usado pelo SecurityFilter
+    @Transactional(readOnly = true)
+    public Optional<Usuario> buscarPorEmail(String email) {
+        return usuarioRepository.findByEmail(email);
     }
 
     private Usuario buscarEntidadePorId(UUID id) {
