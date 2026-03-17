@@ -4,6 +4,7 @@ import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.Logi
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.TokenResponseDTO;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.entity.Usuario;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
