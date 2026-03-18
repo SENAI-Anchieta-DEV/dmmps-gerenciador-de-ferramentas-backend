@@ -12,8 +12,8 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.security.core.AuthenticationException; // <-- TEM que ser essa
 
-import javax.naming.AuthenticationException;
 import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.Map;
