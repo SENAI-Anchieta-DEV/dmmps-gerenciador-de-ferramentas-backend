@@ -4,7 +4,9 @@ import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.Usua
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.dto.UsuarioResponseDTO;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.service.UsuarioService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -13,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/usuarios")
+@RequestMapping("/api/v1/usuarios")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
@@ -33,11 +35,10 @@ public class UsuarioController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UsuarioResponseDTO> cadastrar(@RequestBody @Valid UsuarioRequestDTO dados) {
         UsuarioResponseDTO novoUsuario = usuarioService.cadastrar(dados);
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-                .buildAndExpand(novoUsuario.id()).toUri();
-        return ResponseEntity.created(uri).body(novoUsuario);
+        return ResponseEntity.status(HttpStatus.CREATED).body(novoUsuario);
     }
 
     @PutMapping("/{id}")
