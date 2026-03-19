@@ -128,4 +128,12 @@ public class OcorrenciaService {
                 o.getDataAbertura()
         );
     }
+
+    @Transactional(readOnly = true)
+    public List<OcorrenciaResponseDTO> listarPorUsuario(UUID idUsuario) {
+        return ocorrenciaRepository.findByUsuarioId(idUsuario)
+                .stream()
+                .map(this::toResponseDTO)
+                .toList();
+    }
 }

@@ -35,10 +35,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
-                        // Mapeamento exigido pelos testes: GET de usuarios apenas para ADMIN
-                        .requestMatchers(HttpMethod.GET, "/api/v1/usuarios/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
+                        .requestMatchers("/auth/**").permitAll() // Rota de login continua livre
+                        // REMOVIDA A REGRA GLOBAL DO ADMIN DAQUI
+                        .anyRequest().authenticated() // Qualquer outra rota exige apenas estar logado
                 )
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(authEntryPoint) // 401

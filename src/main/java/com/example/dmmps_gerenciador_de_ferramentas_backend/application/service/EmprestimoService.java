@@ -14,6 +14,7 @@ import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.repository.Em
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.repository.FerramentaRepository;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.repository.UsuarioRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -119,6 +120,19 @@ public class EmprestimoService {
 
     public List<EmprestimoResponseDTO> listarPorFerramenta(UUID ferramentaId) {
         return emprestimoRepository.findByFerramentaId(ferramentaId)
+                .stream()
+                .map(this::toResponseDTO)
+                .toList();
+    }
+
+    //Lista os empréstimos do técnico autenticado (RF06, 5.2.6)
+    public List<EmprestimoResponseDTO> listarMeus() {
+        Usuario usuarioAutenticado = (Usuario) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        return emprestimoRepository.findByUsuarioId(usuarioAutenticado.getId())
                 .stream()
                 .map(this::toResponseDTO)
                 .toList();
