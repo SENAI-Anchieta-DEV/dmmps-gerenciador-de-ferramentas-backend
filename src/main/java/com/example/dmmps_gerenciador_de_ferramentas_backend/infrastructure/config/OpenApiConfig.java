@@ -20,14 +20,23 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("SENAI ToolHub — API de Gerenciamento de Ferramentas")
                         .description("""
-                                API REST do sistema **DMMPS ToolHub**, desenvolvido como Projeto Integrador
-                                no curso Técnico em Desenvolvimento de Sistemas — SENAI Anchieta.
-                                
-                                Gerencia o ciclo de vida de ferramentas (check-out/check-in), ocorrências,
-                                usuários e integração com dispositivos IoT via MQTT/ESP32.
-                                
-                                **Autenticação:** envie o token JWT no header `Authorization: Bearer <token>`.
-                                """)
+                            API REST do sistema **DMMPS ToolHub**, desenvolvido como Projeto Integrador
+                            no curso Técnico em Desenvolvimento de Sistemas — SENAI Anchieta.
+                            
+                            Gerencia o ciclo de vida de ferramentas (check-out/check-in), ocorrências,
+                            usuários e integração com dispositivos IoT via MQTT/ESP32.
+                            
+                            ## Como autenticar
+                            1. Execute **POST /auth/login** com seu e-mail e senha.
+                            2. Copie o valor do campo `token` da resposta.
+                            3. Clique no botão **Authorize 🔒** no topo desta página.
+                            4. No campo **Value**, digite: `Bearer <seu_token>` e clique em **Authorize**.
+                            5. Todas as requisições seguintes já incluirão o token automaticamente.
+                            
+                            **Usuários de teste disponíveis:**
+                            - `admin@toolhub.com` / `senha123` → perfil ADMIN
+                            - `tecnico@toolhub.com` / `senha123` → perfil TECNICO
+                            """)
                         .version("v1.0.0")
                         .contact(new Contact()
                                 .name("Equipe DMMPS — SENAI Anchieta")
@@ -39,6 +48,9 @@ public class OpenApiConfig {
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
                                 .bearerFormat("JWT")
-                                .description("Informe o token JWT obtido em POST /auth/login")));
+                                .description("Token JWT obtido em POST /auth/login. Informe no formato: Bearer {token}"))
+                        .addSchemas("ProblemDetail", new io.swagger.v3.oas.models.media.Schema<>()
+                                .description("Formato padrão de erro da API (RFC 9457)")
+                                .$ref("#/components/schemas/ProblemDetail")));
     }
 }
