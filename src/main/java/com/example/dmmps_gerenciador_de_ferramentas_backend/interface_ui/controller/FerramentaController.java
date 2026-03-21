@@ -6,6 +6,7 @@ import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.enums.StatusF
 import com.example.dmmps_gerenciador_de_ferramentas_backend.application.service.FerramentaService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -24,6 +25,7 @@ public class FerramentaController {
 
     // 1. LISTAR TODAS (GET) - Status 200 OK
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'ALMOXARIFE', 'TECNICO')")
     public ResponseEntity<List<FerramentaResponseDTO>> listar() {
         List<FerramentaResponseDTO> ferramentas = ferramentaService.listarTodas();
         return ResponseEntity.ok(ferramentas);
@@ -31,6 +33,7 @@ public class FerramentaController {
 
     // 2. BUSCAR POR ID (GET) - Status 200 OK
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ALMOXARIFE', 'TECNICO')")
     public ResponseEntity<FerramentaResponseDTO> buscarPorId(@PathVariable UUID id) {
         FerramentaResponseDTO ferramenta = ferramentaService.buscarPorId(id);
         return ResponseEntity.ok(ferramenta);
@@ -39,6 +42,7 @@ public class FerramentaController {
     // 3. CADASTRAR (POST) - Status 201 Created
     // Retorna também o Header 'Location' com a URI do novo recurso
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'ALMOXARIFE')")
     public ResponseEntity<FerramentaResponseDTO> cadastrar(@RequestBody @Valid FerramentaRequestDTO dados) {
         FerramentaResponseDTO novaFerramenta = ferramentaService.cadastrar(dados);
 
@@ -52,6 +56,7 @@ public class FerramentaController {
 
     // 4. ATUALIZAR (PUT) - Status 200 OK
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ALMOXARIFE')")
     public ResponseEntity<FerramentaResponseDTO> atualizar(
             @PathVariable UUID id,
             @RequestBody @Valid FerramentaRequestDTO dados) {
@@ -63,6 +68,7 @@ public class FerramentaController {
     // 5. ATUALIZAR STATUS/PARCIAL (PATCH) - Status 200 OK
     // Ideal para integração com IoT (ex: mudar status para "EM_USO")
     @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ALMOXARIFE')")
     public ResponseEntity<Void> atualizarStatus(
             @PathVariable UUID id,
             @RequestBody @Valid String novoStatus) { // Pode ser um DTO específico depois
@@ -85,6 +91,7 @@ public class FerramentaController {
 
     // 6. REMOVER (DELETE) - Status 204 No Content
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ALMOXARIFE')")
     public ResponseEntity<Void> deletar(@PathVariable UUID id) {
         ferramentaService.deletar(id);
         return ResponseEntity.noContent().build();
