@@ -35,9 +35,15 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll() // Rota de login continua livre
-                        // REMOVIDA A REGRA GLOBAL DO ADMIN DAQUI
-                        .anyRequest().authenticated() // Qualquer outra rota exige apenas estar logado
+                        .requestMatchers("/auth/**").permitAll()
+                        // Swagger UI e spec OpenAPI — acesso público em dev
+                        .requestMatchers(
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs",
+                                "/v3/api-docs/**"
+                        ).permitAll()
+                        .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(authEntryPoint) // 401

@@ -37,8 +37,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        // Pula o filtro se for a rota de login
-        if (request.getServletPath().contains("/auth")) {
+        final String path = request.getServletPath();
+
+        // Pula o filtro para rotas públicas
+        if (path.contains("/auth") ||
+                path.startsWith("/v3/api-docs") ||
+                path.startsWith("/swagger-ui")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -50,6 +54,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
                 return;
             }
+
+            // ... resto do filtro permanece igual
 
             final String jwt = authHeader.substring(7);
             final String email = jwtService.extractEmail(jwt);
