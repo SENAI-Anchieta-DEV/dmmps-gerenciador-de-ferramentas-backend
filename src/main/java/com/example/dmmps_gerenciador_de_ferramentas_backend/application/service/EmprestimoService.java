@@ -38,7 +38,7 @@ public class EmprestimoService {
 
     // --- 1. CHECK-OUT (RF07, RF09, RN01, RF33) ---
     @Transactional
-    public EmprestimoResponseDTO realizarCheckOut(EmprestimoRequestDTO dados) {
+    public EmprestimoResponseDTO realizarCheckOut(EmprestimoRequestDTO dados, Usuario usuarioAutenticado) {
         Ferramenta ferramenta = ferramentaRepository.findById(dados.ferramentaId())
                 .orElseThrow(() -> new FerramentaNaoEncontradaException(dados.ferramentaId()));
 
@@ -51,12 +51,9 @@ public class EmprestimoService {
         emprestimoRepository.findByFerramentaIdAndStatusEmprestimo(dados.ferramentaId(), StatusEmprestimo.ABERTO)
                 .ifPresent(e -> { throw new FerramentaIndisponivelException(dados.ferramentaId(), "Já existe um empréstimo em aberto para esta ferramenta."); });
 
-        Usuario usuario = usuarioRepository.findById(dados.usuarioId())
-                .orElseThrow(() -> new UsuarioNaoEncontradoException(dados.usuarioId().toString()));
-
         Emprestimo novoEmprestimo = new Emprestimo();
         novoEmprestimo.setFerramenta(ferramenta);
-        novoEmprestimo.setUsuario(usuario);
+        novoEmprestimo.setUsuario(usuarioAutenticado); // Usuário vem do JWT
         novoEmprestimo.setStatusEmprestimo(StatusEmprestimo.ABERTO);
 
         // Atualiza status da ferramenta para EM_USO automaticamente
@@ -74,7 +71,6 @@ public class EmprestimoService {
                 .orElseThrow(() -> new EmprestimoNaoEncontradoException(
                         "Empréstimo com id " + id + " não encontrado."));
 
-        // Impede finalizar empréstimo já finalizado
         if (emprestimo.getStatusEmprestimo() == StatusEmprestimo.FINALIZADO) {
             throw new EmprestimoJaFinalizadoException("Empréstimo com id " + id + " já foi finalizado.");
         }
@@ -83,7 +79,6 @@ public class EmprestimoService {
         emprestimo.setDataDevolucao(LocalDateTime.now());
         emprestimo.setStatusEmprestimo(StatusEmprestimo.FINALIZADO);
 
-        // Atualiza status da ferramenta automaticamente
         Ferramenta ferramenta = emprestimo.getFerramenta();
         if (dados.estadoConservacao() == EstadoConservacao.DANIFICADA) {
             ferramenta.setStatus(StatusFerramenta.EM_MANUTENCAO); // RF13
@@ -125,7 +120,6 @@ public class EmprestimoService {
                 .toList();
     }
 
-    //Lista os empréstimos do técnico autenticado (RF06, 5.2.6)
     public List<EmprestimoResponseDTO> listarMeus() {
         Usuario usuarioAutenticado = (Usuario) SecurityContextHolder
                 .getContext()

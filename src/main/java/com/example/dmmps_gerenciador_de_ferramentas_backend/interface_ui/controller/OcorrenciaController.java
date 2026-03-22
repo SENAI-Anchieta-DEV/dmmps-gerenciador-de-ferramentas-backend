@@ -74,8 +74,9 @@ public class OcorrenciaController {
         return ResponseEntity.ok(ocorrenciaService.listarTodas());
     }
 
+    // POST /ocorrencias — Abrir ocorrência (RF14)
     @Operation(summary = "Abrir ocorrência",
-            description = "Registra uma ocorrência de problema em uma ferramenta. A ferramenta é automaticamente movida para EM_MANUTENCAO (RF14).")
+            description = "Registra uma ocorrência de problema em uma ferramenta. O usuário é identificado automaticamente pelo token JWT. A ferramenta é automaticamente movida para EM_MANUTENCAO (RF14).")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Ocorrência registrada com sucesso",
                     content = @Content(mediaType = "application/json",
@@ -84,43 +85,44 @@ public class OcorrenciaController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = OpenApiSchemas.ProblemDetailSchema.class),
                             examples = @ExampleObject(value = """
-                    {
-                      "status": 401,
-                      "title": "Não Autenticado",
-                      "detail": "Autenticação ausente ou token inválido/expirado.",
-                      "instance": "/ocorrencias",
-                      "timestamp": "2025-03-21T14:30:00",
-                      "application": "GerenciadorFerramentasAPI"
-                    }
-                """))),
-            @ApiResponse(responseCode = "404", description = "Ferramenta ou usuário não encontrado",
+                {
+                  "status": 401,
+                  "title": "Não Autenticado",
+                  "detail": "Autenticação ausente ou token inválido/expirado.",
+                  "instance": "/ocorrencias",
+                  "timestamp": "2025-03-21T14:30:00",
+                  "application": "GerenciadorFerramentasAPI"
+                }
+            """))),
+            @ApiResponse(responseCode = "404", description = "Ferramenta não encontrada",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = OpenApiSchemas.ProblemDetailSchema.class),
                             examples = @ExampleObject(value = """
-                    {
-                      "status": 404,
-                      "title": "Recurso não encontrado",
-                      "detail": "Ferramenta não encontrada com id: 123e4567-e89b-12d3-a456-426614174000",
-                      "instance": "/ocorrencias",
-                      "timestamp": "2025-03-21T14:30:00",
-                      "application": "GerenciadorFerramentasAPI"
-                    }
-                """)))
+                {
+                  "status": 404,
+                  "title": "Recurso não encontrado",
+                  "detail": "Ferramenta não encontrada com id: 123e4567-e89b-12d3-a456-426614174000",
+                  "instance": "/ocorrencias",
+                  "timestamp": "2025-03-21T14:30:00",
+                  "application": "GerenciadorFerramentasAPI"
+                }
+            """)))
     })
     @PostMapping
     @PreAuthorize("hasAnyRole('TECNICO', 'ALMOXARIFE')")
     public ResponseEntity<OcorrenciaResponseDTO> abrirOcorrencia(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = @Content(examples = @ExampleObject(value = """
-                    {
-                      "ferramentaId": "123e4567-e89b-12d3-a456-426614174000",
-                      "usuarioId": "987fcdeb-51a2-43f7-b210-111122223333",
-                      "titulo": "Chave com cabo quebrado",
-                      "descricao": "O cabo da chave de fenda está rachado e pode causar acidentes."
-                    }
-                """)))
-            @RequestBody @Valid OcorrenciaRequestDTO dados) {
-        OcorrenciaResponseDTO nova = ocorrenciaService.registrarOcorrencia(dados);
+                {
+                  "ferramentaId": "123e4567-e89b-12d3-a456-426614174000",
+                  "titulo": "Chave com cabo quebrado",
+                  "descricao": "O cabo da chave de fenda está rachado e pode causar acidentes."
+                }
+            """)))
+            @RequestBody @Valid OcorrenciaRequestDTO dados,
+            Authentication authentication) {
+        Usuario usuarioAutenticado = (Usuario) authentication.getPrincipal();
+        OcorrenciaResponseDTO nova = ocorrenciaService.registrarOcorrencia(dados, usuarioAutenticado);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}").buildAndExpand(nova.id()).toUri();
         return ResponseEntity.created(uri).body(nova);
