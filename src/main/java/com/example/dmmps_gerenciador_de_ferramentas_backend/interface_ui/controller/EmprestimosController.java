@@ -36,7 +36,7 @@ public class EmprestimosController {
     }
 
     @Operation(summary = "Realizar check-out",
-            description = "Registra a retirada de uma ferramenta por um técnico. A ferramenta deve estar DISPONIVEL (RN01). Impede dois técnicos de pegar a mesma ferramenta (RF33).")
+            description = "Registra a retirada de uma ferramenta. O técnico é identificado automaticamente pelo token JWT.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Check-out realizado com sucesso",
                     content = @Content(mediaType = "application/json",
@@ -45,69 +45,73 @@ public class EmprestimosController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = OpenApiSchemas.ProblemDetailSchema.class),
                             examples = @ExampleObject(value = """
-                    {
-                      "status": 401,
-                      "title": "Não Autenticado",
-                      "detail": "Autenticação ausente ou token inválido/expirado.",
-                      "instance": "/emprestimos",
-                      "timestamp": "2025-03-21T14:30:00",
-                      "application": "GerenciadorFerramentasAPI"
-                    }
-                """))),
+                {
+                  "status": 401,
+                  "title": "Não Autenticado",
+                  "detail": "Autenticação ausente ou token inválido/expirado.",
+                  "instance": "/emprestimos",
+                  "timestamp": "2025-03-21T14:30:00",
+                  "application": "GerenciadorFerramentasAPI"
+                }
+            """))),
             @ApiResponse(responseCode = "403", description = "Sem permissão — requer TECNICO",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = OpenApiSchemas.ProblemDetailSchema.class),
                             examples = @ExampleObject(value = """
-                    {
-                      "status": 403,
-                      "title": "Acesso Negado",
-                      "detail": "Você não tem permissão para acessar este recurso.",
-                      "instance": "/emprestimos",
-                      "timestamp": "2025-03-21T14:30:00",
-                      "application": "GerenciadorFerramentasAPI"
-                    }
-                """))),
-            @ApiResponse(responseCode = "404", description = "Ferramenta ou usuário não encontrado",
+                {
+                  "status": 403,
+                  "title": "Acesso Negado",
+                  "detail": "Você não tem permissão para acessar este recurso.",
+                  "instance": "/emprestimos",
+                  "timestamp": "2025-03-21T14:30:00",
+                  "application": "GerenciadorFerramentasAPI"
+                }
+            """))),
+            @ApiResponse(responseCode = "404", description = "Ferramenta não encontrada",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = OpenApiSchemas.ProblemDetailSchema.class),
                             examples = @ExampleObject(value = """
-                    {
-                      "status": 404,
-                      "title": "Recurso não encontrado",
-                      "detail": "Ferramenta não encontrada com id: 123e4567-e89b-12d3-a456-426614174000",
-                      "instance": "/emprestimos",
-                      "timestamp": "2025-03-21T14:30:00",
-                      "application": "GerenciadorFerramentasAPI"
-                    }
-                """))),
+                {
+                  "status": 404,
+                  "title": "Recurso não encontrado",
+                  "detail": "Ferramenta não encontrada com id: 123e4567-e89b-12d3-a456-426614174000",
+                  "instance": "/emprestimos",
+                  "timestamp": "2025-03-21T14:30:00",
+                  "application": "GerenciadorFerramentasAPI"
+                }
+            """))),
             @ApiResponse(responseCode = "409", description = "Ferramenta indisponível para empréstimo",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = OpenApiSchemas.ProblemDetailSchema.class),
                             examples = @ExampleObject(value = """
-                    {
-                      "status": 409,
-                      "title": "Ferramenta indisponível",
-                      "detail": "A ferramenta não está disponível para empréstimo. Motivo: Status atual: EM_USO",
-                      "instance": "/emprestimos",
-                      "timestamp": "2025-03-21T14:30:00",
-                      "application": "GerenciadorFerramentasAPI"
-                    }
-                """)))
+                {
+                  "status": 409,
+                  "title": "Ferramenta indisponível",
+                  "detail": "A ferramenta não está disponível para empréstimo. Motivo: Status atual: EM_USO",
+                  "instance": "/emprestimos",
+                  "timestamp": "2025-03-21T14:30:00",
+                  "application": "GerenciadorFerramentasAPI"
+                }
+            """)))
     })
     @PostMapping
     @PreAuthorize("hasRole('TECNICO')")
     public ResponseEntity<EmprestimoResponseDTO> realizarCheckOut(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = @Content(examples = @ExampleObject(value = """
-                    {
-                      "usuarioId": "123e4567-e89b-12d3-a456-426614174000",
-                      "ferramentaId": "987fcdeb-51a2-43f7-b210-111122223333"
-                    }
-                """)))
-            @RequestBody EmprestimoRequestDTO dados) {
-        EmprestimoResponseDTO response = emprestimoService.realizarCheckOut(dados);
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}").buildAndExpand(response.id()).toUri();
+                {
+                  "ferramentaId": "987fcdeb-51a2-43f7-b210-111122223333"
+                }
+            """)))
+            @RequestBody EmprestimoRequestDTO dados,
+            Authentication authentication) {
+        Usuario usuarioAutenticado = (Usuario) authentication.getPrincipal();
+        EmprestimoResponseDTO response = emprestimoService.realizarCheckOut(dados, usuarioAutenticado);
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(response.id())
+                .toUri();
         return ResponseEntity.created(location).body(response);
     }
 
