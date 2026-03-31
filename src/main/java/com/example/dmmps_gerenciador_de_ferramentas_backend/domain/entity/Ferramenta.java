@@ -3,6 +3,7 @@ package com.example.dmmps_gerenciador_de_ferramentas_backend.domain.entity;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.enums.StatusFerramenta;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SoftDelete;
 
 import java.util.UUID;
 
@@ -13,6 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
+@SoftDelete(columnName = "ativo") // Nova forma nativa do Hibernate 6.4
 public class Ferramenta {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
