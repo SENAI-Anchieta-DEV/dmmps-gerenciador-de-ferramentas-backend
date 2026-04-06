@@ -7,6 +7,8 @@ import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.exceptions.Em
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.exceptions.NegocioException;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.exceptions.UsuarioNaoEncontradoException;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.repository.UsuarioRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,30 +19,44 @@ import java.util.UUID;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
-    // PasswordEncoder removido temporariamente para não quebrar o projeto sem o Spring Security
+    private final PasswordEncoder passwordEncoder;
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
+    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
-    public UsuarioResponseDTO cadastrar(UsuarioRequestDTO dados) {
-        if (usuarioRepository.existsByEmail(dados.email())) {
-            throw new EmailJaCadastradoException("Já existe um usuário com o e-mail: " + dados.email());
+    public UsuarioResponseDTO cadastrar(UsuarioRequestDTO dto) {
+        // 1. Validações de regra de negócio
+        if (usuarioRepository.existsByEmail(dto.email())) {
+            throw new EmailJaCadastradoException("Já existe um usuário cadastrado com este e-mail.");
         }
-        if (usuarioRepository.existsByRegistro(dados.registro())) {
+        if (usuarioRepository.existsByRegistro(dto.registro())) {
             throw new NegocioException("Já existe um usuário com este registro/matrícula.");
         }
 
+        // 2. Criação da entidade e criptografia da senha
         Usuario novoUsuario = new Usuario(
-                dados.nome(),
-                dados.email(),
-                dados.senha(), // Salvando sem criptografia por enquanto
-                dados.registro(),
-                dados.perfil()
+                dto.nome(),
+                dto.email(),
+                passwordEncoder.encode(dto.senha()), // Criptografa a senha antes de salvar!
+                dto.registro(),
+                dto.perfil()
         );
 
-        return toResponseDTO(usuarioRepository.save(novoUsuario));
+        // 3. Salva no banco de dados
+        usuarioRepository.save(novoUsuario);
+
+        // 4. Retorna o DTO de resposta (sem a senha, por segurança)
+        return new UsuarioResponseDTO(
+                novoUsuario.getId(),
+                novoUsuario.getNome(),
+                novoUsuario.getEmail(),
+                novoUsuario.getRegistro(),
+                novoUsuario.getPerfil(),
+                novoUsuario.getAtivo()
+        );
     }
 
     @Transactional

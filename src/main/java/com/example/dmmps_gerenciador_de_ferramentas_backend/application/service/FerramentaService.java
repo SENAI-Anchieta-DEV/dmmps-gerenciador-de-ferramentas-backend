@@ -6,6 +6,7 @@ import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.entity.Ferram
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.enums.StatusFerramenta;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.exceptions.CodigoPatrimonioDuplicadoException;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.exceptions.FerramentaNaoEncontradaException;
+import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.exceptions.ValidacaoException;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.repository.FerramentaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,10 +87,16 @@ public class FerramentaService {
     // --- 6. REMOVER (Delete) ---
     @Transactional
     public void deletar(UUID id) {
-        if (!ferramentaRepository.existsById(id)) {
-            throw new FerramentaNaoEncontradaException("Ferramenta não encontrada");
+        Ferramenta ferramenta = ferramentaRepository.findById(id)
+                .orElseThrow(() -> new FerramentaNaoEncontradaException("Ferramenta não encontrada"));
+
+        // RN: Bloqueia a deleção se a ferramenta estiver emprestada no momento
+        if (ferramenta.getStatus() == StatusFerramenta.EM_USO) {
+            throw new ValidacaoException("Não é possível excluir uma ferramenta que está em uso.");
         }
-        ferramentaRepository.deleteById(id);
+
+        // Como usamos @SQLDelete, esse metodo apenas executará o UPDATE definido na entidade
+        ferramentaRepository.delete(ferramenta);
     }
 
     // --- Métodos Auxiliares ---

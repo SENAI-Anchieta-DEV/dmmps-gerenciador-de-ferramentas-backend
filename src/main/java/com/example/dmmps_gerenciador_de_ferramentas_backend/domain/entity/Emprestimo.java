@@ -3,6 +3,8 @@ package com.example.dmmps_gerenciador_de_ferramentas_backend.domain.entity;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.enums.EstadoConservacao;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.enums.StatusEmprestimo;
 import jakarta.persistence.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -17,6 +19,7 @@ public class Emprestimo {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ferramenta_id", nullable = false)
+    @NotFound(action = NotFoundAction.IGNORE)
     private Ferramenta ferramenta;
 
     @ManyToOne(fetch = FetchType.LAZY)

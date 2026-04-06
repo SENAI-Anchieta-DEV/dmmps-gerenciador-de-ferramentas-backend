@@ -38,17 +38,14 @@ public class OcorrenciaService {
 
     // --- 1. REGISTRAR OCORRÊNCIA (RF14) ---
     @Transactional
-    public OcorrenciaResponseDTO registrarOcorrencia(OcorrenciaRequestDTO dados) {
+    public OcorrenciaResponseDTO registrarOcorrencia(OcorrenciaRequestDTO dados, Usuario usuarioAutenticado) {
         Ferramenta ferramenta = ferramentaRepository.findById(dados.ferramentaId())
-                .orElseThrow(() -> new FerramentaNaoEncontradaException("Ferramenta não encontrada com id: " + dados.ferramentaId()));
-
-
-        Usuario usuario = usuarioRepository.findById(dados.usuarioId())
-                .orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado com id: "));
+                .orElseThrow(() -> new FerramentaNaoEncontradaException(
+                        "Ferramenta não encontrada com id: " + dados.ferramentaId()));
 
         Ocorrencia novaOcorrencia = new Ocorrencia();
         novaOcorrencia.setFerramenta(ferramenta);
-        novaOcorrencia.setUsuario(usuario);
+        novaOcorrencia.setUsuario(usuarioAutenticado); // Usuário vem do JWT
         novaOcorrencia.setTitulo(dados.titulo());
         novaOcorrencia.setDescricao(dados.descricao());
         novaOcorrencia.setStatusOcorrencia(StatusOcorrencia.EM_MANUTENCAO);
@@ -122,10 +119,21 @@ public class OcorrenciaService {
         return new OcorrenciaResponseDTO(
                 o.getId(),
                 o.getFerramenta().getId(),
+                o.getFerramenta().getNome(),
                 o.getUsuario().getId(),
+                o.getUsuario().getNome(),
                 o.getTitulo(),
                 o.getDescricao(),
+                o.getStatusOcorrencia(),
                 o.getDataAbertura()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<OcorrenciaResponseDTO> listarPorUsuario(UUID idUsuario) {
+        return ocorrenciaRepository.findByUsuarioId(idUsuario)
+                .stream()
+                .map(this::toResponseDTO)
+                .toList();
     }
 }
