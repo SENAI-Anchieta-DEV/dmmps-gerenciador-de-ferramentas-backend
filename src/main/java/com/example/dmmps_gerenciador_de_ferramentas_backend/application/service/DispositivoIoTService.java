@@ -35,6 +35,7 @@ public class DispositivoIoTService {
         dispositivo.setLocalizacaoFisica(dados.localizacaoFisica());
         dispositivo.setDescricao(dados.descricao());
         dispositivo.setStatusConectividade(StatusConectividade.OFFLINE);
+        dispositivo.setMacAddress(dados.macAddress().toUpperCase().replace("-", ":"));
 
         DispositivoIoT salvo = dispositivoRepository.save(dispositivo);
         return toResponseDTO(salvo);
@@ -70,6 +71,13 @@ public class DispositivoIoTService {
         dispositivo.setMacAddress(dados.macAddress());
         dispositivo.setLocalizacaoFisica(dados.localizacaoFisica());
         dispositivo.setDescricao(dados.descricao());
+        String macNormalizado = dados.macAddress().toUpperCase().replace("-", ":");
+
+        if (!dispositivo.getMacAddress().equals(macNormalizado)
+                && dispositivoRepository.existsByMacAddress(macNormalizado)) {
+            throw new MacAddressDuplicadoException(macNormalizado);
+        }
+
 
         DispositivoIoT salvo = dispositivoRepository.save(dispositivo);
         return toResponseDTO(salvo);
