@@ -1,0 +1,46 @@
+services:
+  # ==========================================
+  # 1. Serviço Web (A sua aplicação Spring Boot)
+  # ==========================================
+  - type: web
+    name: dmmps-gerenciador-api
+    runtime: docker # Informa a Render para usar o nosso Dockerfile
+    plan: free # Usa o plano gratuito (pode alterar se necessário)
+    region: ohio # Região próxima ao Brasil para menor latência
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /v3/api-docs # Usa o Swagger como verificação de saúde da app
+    envVars:
+      # Ativa o perfil de produção do Spring Boot (lê o application-prod.properties)
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+
+      # Injeta as credenciais diretamente da base de dados criada abaixo (Segurança máxima)
+      - key: DB_HOST
+        fromDatabase:
+          name: dmmps-gerenciador-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: dmmps-gerenciador-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: dmmps-gerenciador-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: dmmps-gerenciador-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: dmmps-gerenciador-db
+          property: password
+
+# ==========================================
+# 2. Base de Dados PostgreSQL Gerenciada
+# ==========================================
+databases:
+  - name: dmmps-gerenciador-db
+    plan: free
+    region: ohio
+    # Render vai gerar o user, password e database_name automaticamente
