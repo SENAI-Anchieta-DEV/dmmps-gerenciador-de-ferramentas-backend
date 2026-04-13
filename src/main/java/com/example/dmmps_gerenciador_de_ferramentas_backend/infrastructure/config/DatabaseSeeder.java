@@ -8,6 +8,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Optional;
+
 @Configuration
 @RequiredArgsConstructor
 public class DatabaseSeeder implements CommandLineRunner {
@@ -17,31 +19,45 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Verifica se o banco já tem usuários para não duplicar caso você mude para PostgreSQL no futuro
-        if (usuarioRepository.count() == 0) {
+        // 1. Gerenciar Usuário ADMIN
+        seedUsuario(
+                "Marcus (Admin)",
+                "admin@toolhub.com",
+                "senha123",
+                "REG-001",
+                PerfilUsuario.ADMIN
+        );
 
-            // 1. Cria um usuário ADMIN
-            Usuario admin = new Usuario(
-                    "Marcus (Admin)",
-                    "admin@toolhub.com",
-                    passwordEncoder.encode("senha123"), // Criptografa a senha na hora de salvar
-                    "REG-001",
-                    PerfilUsuario.ADMIN
+        // 2. Gerenciar Usuário TÉCNICO
+        seedUsuario(
+                "Técnico Silva",
+                "tecnico@toolhub.com",
+                "senha123",
+                "REG-002",
+                PerfilUsuario.TECNICO
+        );
+    }
+
+    private void seedUsuario(String nome, String email, String senhaPura, String registro, PerfilUsuario perfil) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+
+        if (usuarioOpt.isEmpty()) {
+            // Se não existe, cria do zero
+            Usuario novoUsuario = new Usuario(
+                    nome,
+                    email,
+                    passwordEncoder.encode(senhaPura),
+                    registro,
+                    perfil
             );
-
-            // 2. Cria um usuário TÉCNICO
-            Usuario tecnico = new Usuario(
-                    "Técnico Silva",
-                    "tecnico@toolhub.com",
-                    passwordEncoder.encode("senha123"),
-                    "REG-002",
-                    PerfilUsuario.TECNICO
-            );
-
-            usuarioRepository.save(admin);
-            usuarioRepository.save(tecnico);
-
-            System.out.println("✅ Usuários de teste criados no banco H2 com sucesso!");
+            usuarioRepository.save(novoUsuario);
+            System.out.println("✅ Usuário criado: " + email);
+        } else {
+            // Se já existe, garante que a senha está criptografada (BCrypt)
+            Usuario usuarioExistente = usuarioOpt.get();
+            usuarioExistente.setSenha(passwordEncoder.encode(senhaPura));
+            usuarioRepository.save(usuarioExistente);
+            System.out.println("🔄 Senha atualizada para: " + email);
         }
     }
 }
