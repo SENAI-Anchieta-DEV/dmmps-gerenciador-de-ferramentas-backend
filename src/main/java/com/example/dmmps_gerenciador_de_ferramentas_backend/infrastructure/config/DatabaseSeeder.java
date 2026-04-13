@@ -19,45 +19,27 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // 1. Gerenciar Usuário ADMIN
-        seedUsuario(
-                "Marcus (Admin)",
-                "admin@toolhub.com",
-                "senha123",
-                "REG-001",
-                PerfilUsuario.ADMIN
+        // Tenta encontrar o admin existente
+        usuarioRepository.findByEmail("admin@toolhub.com").ifPresentOrElse(
+                usuarioExistente -> {
+                    // Se ele já existe, forçamos a atualização da senha para o formato BCrypt
+                    usuarioExistente.setSenha(passwordEncoder.encode("senha123"));
+                    usuarioExistente.setAtivo(true);
+                    usuarioRepository.save(usuarioExistente);
+                    System.out.println("🔄 Senha do ADMIN atualizada com BCrypt!");
+                },
+                () -> {
+                    // Se não existe, cria do zero
+                    Usuario admin = new Usuario(
+                            "Marcus (Admin)",
+                            "admin@toolhub.com",
+                            passwordEncoder.encode("senha123"),
+                            "REG-001",
+                            PerfilUsuario.ADMIN
+                    );
+                    usuarioRepository.save(admin);
+                    System.out.println("✅ Novo usuário ADMIN criado!");
+                }
         );
-
-        // 2. Gerenciar Usuário TÉCNICO
-        seedUsuario(
-                "Técnico Silva",
-                "tecnico@toolhub.com",
-                "senha123",
-                "REG-002",
-                PerfilUsuario.TECNICO
-        );
-    }
-
-    private void seedUsuario(String nome, String email, String senhaPura, String registro, PerfilUsuario perfil) {
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
-
-        if (usuarioOpt.isEmpty()) {
-            // Se não existe, cria do zero
-            Usuario novoUsuario = new Usuario(
-                    nome,
-                    email,
-                    passwordEncoder.encode(senhaPura),
-                    registro,
-                    perfil
-            );
-            usuarioRepository.save(novoUsuario);
-            System.out.println("✅ Usuário criado: " + email);
-        } else {
-            // Se já existe, garante que a senha está criptografada (BCrypt)
-            Usuario usuarioExistente = usuarioOpt.get();
-            usuarioExistente.setSenha(passwordEncoder.encode(senhaPura));
-            usuarioRepository.save(usuarioExistente);
-            System.out.println("🔄 Senha atualizada para: " + email);
-        }
     }
 }
