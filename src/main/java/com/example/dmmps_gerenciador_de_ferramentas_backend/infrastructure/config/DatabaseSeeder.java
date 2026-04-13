@@ -19,17 +19,16 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Tenta encontrar o admin existente
+        // Tenta encontrar o Marcus (Admin) pelo e-mail
         usuarioRepository.findByEmail("admin@toolhub.com").ifPresentOrElse(
-                usuarioExistente -> {
-                    // Se ele já existe, forçamos a atualização da senha para o formato BCrypt
-                    usuarioExistente.setSenha(passwordEncoder.encode("senha123"));
-                    usuarioExistente.setAtivo(true);
-                    usuarioRepository.save(usuarioExistente);
-                    System.out.println("🔄 Senha do ADMIN atualizada com BCrypt!");
+                usuario -> {
+                    // Força a atualização da senha para o formato criptografado correto
+                    usuario.setSenha(passwordEncoder.encode("senha123"));
+                    usuarioRepository.save(usuario);
+                    System.out.println("🔄 Senha do admin@toolhub.com atualizada com sucesso!");
                 },
                 () -> {
-                    // Se não existe, cria do zero
+                    // Se não existir, cria o novo
                     Usuario admin = new Usuario(
                             "Marcus (Admin)",
                             "admin@toolhub.com",
@@ -38,7 +37,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                             PerfilUsuario.ADMIN
                     );
                     usuarioRepository.save(admin);
-                    System.out.println("✅ Novo usuário ADMIN criado!");
+                    System.out.println("✅ Novo usuário ADMIN criado com sucesso!");
                 }
         );
     }
