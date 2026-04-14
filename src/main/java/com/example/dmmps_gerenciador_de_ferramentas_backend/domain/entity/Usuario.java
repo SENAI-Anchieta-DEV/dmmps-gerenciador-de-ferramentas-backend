@@ -3,7 +3,12 @@ package com.example.dmmps_gerenciador_de_ferramentas_backend.domain.entity;
 import com.example.dmmps_gerenciador_de_ferramentas_backend.domain.enums.PerfilUsuario;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -13,7 +18,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class Usuario {
+public class Usuario implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -46,5 +51,48 @@ public class Usuario {
         this.registro = registro;
         this.perfil = perfil;
         this.ativo = true;
+    }
+
+    // =========================================================
+    // MÉTODOS DA INTERFACE USERDETAILS (SPRING SECURITY)
+    // =========================================================
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // Mapeia o Enum de Perfil para o formato de Roles do Spring Security
+        return List.of(new SimpleGrantedAuthority("ROLE_" + this.perfil.name()));
+    }
+
+    @Override
+    public String getPassword() {
+        // Retorna a senha criptografada salva no banco
+        return this.senha;
+    }
+
+    @Override
+    public String getUsername() {
+        // Define qual campo será a "chave" de login (neste caso, o email)
+        return this.email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true; // Define que a conta não expira
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true; // Define que a conta não bloqueia
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true; // Define que as credenciais (senha) não expiram
+    }
+
+    @Override
+    public boolean isEnabled() {
+        // Usa o seu campo "ativo" para dizer ao Spring se o usuário pode logar
+        return this.ativo != null ? this.ativo : false;
     }
 }
