@@ -66,7 +66,7 @@ public class SecurityConfig {
 
         // Origens permitidas em desenvolvimento
         config.setAllowedOrigins(List.of(
-                //"http://localhost:3000",  // React (Create React App)
+                "http://localhost:3000",  // React (Create React App)
                 "https://toolhub-frontend.web.app/"
         ));
 
