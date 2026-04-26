@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -326,5 +327,12 @@ public class EmprestimosController {
     public ResponseEntity<List<EmprestimoResponseDTO>> listarMeus(Authentication authentication) {
         Usuario usuarioAutenticado = (Usuario) authentication.getPrincipal();
         return ResponseEntity.ok(emprestimoService.listarPorTecnico(usuarioAutenticado.getId()));
+    }
+
+    @PostMapping("/solicitar/{ferramentaId}")
+    public ResponseEntity<EmprestimoResponseDTO> solicitarFerramenta(@PathVariable UUID ferramentaId) {
+        Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        EmprestimoResponseDTO response = emprestimoService.solicitarFerramenta(ferramentaId, usuarioLogado);
+        return ResponseEntity.ok(response);
     }
 }

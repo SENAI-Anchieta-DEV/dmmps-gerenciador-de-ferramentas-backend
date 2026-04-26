@@ -147,4 +147,78 @@ public class EmprestimoService {
                 emprestimo.getStatusEmprestimo().name()
         );
     }
+
+    // --- 4. INTEGRAÇÃO IOT (MQTT) ---
+    @Transactional
+    public void processarLeituraIoT(String codigoPatrimonio, String macAddress) {
+        Ferramenta ferramenta = ferramentaRepository.findByCodigoPatrimonio(codigoPatrimonio)
+                .orElseThrow(() -> new FerramentaNaoEncontradaException(UUID.randomUUID()));
+
+        // ==========================================
+        // FLUXO DE RETIRADA (CHECK-OUT)
+        // ==========================================
+        if (ferramenta.getStatus() == StatusFerramenta.DISPONIVEL) {
+            System.out.println(">>> [IoT] Lida ferramenta no RFID: " + ferramenta.getNome());
+
+            // 1. Procura se alguém solicitou esta ferramenta pelo App
+            // Como você já tem esse método no repository, vamos reutilizá-hor
+            Emprestimo reserva = emprestimoRepository.findByFerramentaIdAndStatusEmprestimo(ferramenta.getId(), StatusEmprestimo.AGUARDANDO_RETIRADA)
+                    .orElseThrow(() -> new NegocioException("Tentativa de retirada bloqueada: Nenhuma solicitação via app foi feita para esta ferramenta."));
+
+            // 2. Se achou a reserva, efetiva o empréstimo!
+            reserva.setStatusEmprestimo(StatusEmprestimo.ABERTO);
+            reserva.setDataRetirada(LocalDateTime.now());
+
+            ferramenta.setStatus(StatusFerramenta.EM_USO);
+
+            emprestimoRepository.save(reserva);
+            ferramentaRepository.save(ferramenta);
+
+            System.out.println(">>> [IoT] SUCESSO! Ferramenta vinculada ao técnico: " + reserva.getUsuario().getNome());
+
+            // ==========================================
+            // FLUXO DE DEVOLUÇÃO (CHECK-IN)
+            // ==========================================
+        } else if (ferramenta.getStatus() == StatusFerramenta.EM_USO) {
+            System.out.println(">>> [IoT] Iniciando DEVOLUÇÃO da ferramenta: " + ferramenta.getNome());
+
+            Emprestimo emprestimoAberto = emprestimoRepository.findByFerramentaIdAndStatusEmprestimo(ferramenta.getId(), StatusEmprestimo.ABERTO)
+                    .orElseThrow(() -> new EmprestimoNaoEncontradoException("Nenhum empréstimo aberto para esta ferramenta."));
+
+            // Efetiva a devolução chamando o seu método existente
+            DevolucaoRequestDTO devolucaoDTO = new DevolucaoRequestDTO(EstadoConservacao.BOM_ESTADO);
+            this.realizarCheckIn(emprestimoAberto.getId(), devolucaoDTO);
+
+            System.out.println(">>> [IoT] Devolução concluída com sucesso!");
+
+        } else {
+            System.err.println(">>> [IoT] ALERTA: A ferramenta " + ferramenta.getNome() + " está em status inválido: " + ferramenta.getStatus());
+        }
+    }
+
+    // --- NOVO: SOLICITAÇÃO VIA APP/WEB ---
+    @Transactional
+    public EmprestimoResponseDTO solicitarFerramenta(UUID ferramentaId, Usuario usuarioAutenticado) {
+        Ferramenta ferramenta = ferramentaRepository.findById(ferramentaId)
+                .orElseThrow(() -> new FerramentaNaoEncontradaException(ferramentaId));
+
+        if (ferramenta.getStatus() != StatusFerramenta.DISPONIVEL) {
+            throw new FerramentaIndisponivelException(ferramentaId, "Status atual: " + ferramenta.getStatus().name());
+        }
+
+        // 1. Cria a intenção de empréstimo (Reserva)
+        Emprestimo pendente = new Emprestimo();
+        pendente.setFerramenta(ferramenta);
+        pendente.setUsuario(usuarioAutenticado);
+        pendente.setStatusEmprestimo(StatusEmprestimo.AGUARDANDO_RETIRADA); // Fica em espera!
+
+        // 2. Salva no banco
+        Emprestimo salvo = emprestimoRepository.save(pendente);
+
+        // TODO: Aqui você vai injetar o seu PublicadorService e enviar a mensagem MQTT
+        // Exemplo: publicadorService.publicar("toolhub/feedback", "LIBERAR");
+        System.out.println(">>> [API] Solicitação criada. Gaveta liberada para: " + ferramenta.getNome());
+
+        return toResponseDTO(salvo);
+    }
 }
