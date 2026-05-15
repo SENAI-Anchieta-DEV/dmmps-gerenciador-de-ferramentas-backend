@@ -96,7 +96,15 @@
             <version>0.11.5</version>
             <scope>runtime</scope>
         </dependency>
-        <!-- Swagger / OpenAPI 3 -->
+
+		<dependency>
+			<groupId>io.rest-assured</groupId>
+			<artifactId>rest-assured</artifactId>
+			<version>6.0.0</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Swagger / OpenAPI 3 -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
